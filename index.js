@@ -18,8 +18,8 @@ module.exports = function AutoStance(dispatch) {
       location = null
 
   dispatch.hook('C_PLAYER_LOCATION', 1, (event) => { location = event })
-  dispatch.hook('S_MOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid) mounted = true })
-  dispatch.hook('S_UNMOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid) mounted = false })
+  dispatch.hook('S_MOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid)) mounted = true })
+  dispatch.hook('S_UNMOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid)) mounted = false })
 
   dispatch.hook('S_LOGIN', 2, (event) => {
     ({cid, model} = event)
