@@ -3,8 +3,8 @@ const INTERVAL = 2000
 const JOB_WARRIOR = 0
 const JOB_ARCHER  = 5
 
-const ASSAULT_STANCE = [ 100150, 67189264 ] // [0] = Skill ID, [1] = Abrnomality ID
 const SNIPERS_EYE = [ 601133, 67319064 ] // [0] = Skill ID, [1] = Abrnomality ID
+const ASSAULT_STANCE = [ 100150, 67189264, 10154030, 0x4000000 + 110100 ] // [0] = Skill ID, [1] = Abrnomality ID
 
 module.exports = function AutoStance(dispatch) {
   let re = null,
@@ -24,7 +24,7 @@ module.exports = function AutoStance(dispatch) {
   dispatch.hook('S_LOGIN', 2, (event) => {
     ({cid, model} = event)
     job = (model - 10101) % 100
-    skill = (job == JOB_ARCHER) ? SNIPERS_EYE[1] : ASSAULT_STANCE[1]
+    skill = (job == JOB_ARCHER) ? SNIPERS_EYE[1] : ((job == 11) ? ASSAULT_STANCE[3] : ASSAULT_STANCE[1])
   })
 
   dispatch.hook('S_PLAYER_CHANGE_STAMINA', 1, (event) => {
