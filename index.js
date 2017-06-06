@@ -3,8 +3,8 @@ const INTERVAL = 2000
 const JOB_WARRIOR = 0
 const JOB_ARCHER  = 5
 
-const SNIPERS_EYE = [ 601133, 67319064 ] // [0] = Skill ID, [1] = Abrnomality ID
-const ASSAULT_STANCE = [ 100150, 67189264, 10154030, 0x4000000 + 110100 ] // [0] = Skill ID, [1] = Abrnomality ID
+const SNIPERS_EYE = [ 601133, 67319064 ] // [0] = Skill ID, [1] = Abnormality ID
+const ASSAULT_STANCE = [ 100150, 67189264, 10154030, 0x4000000 + 110100 ] // [0] = Skill ID, [1] = Abnormality ID
 
 module.exports = function AutoStance(dispatch) {
   let re = null,
