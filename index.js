@@ -1,73 +1,106 @@
-const INTERVAL = 2000
+const INTERVAL = 2000;
 
-const JOB_WARRIOR = 0
-const JOB_ARCHER  = 5
-
-const SNIPERS_EYE = [ 601133, 67319064 ] // [0] = Skill ID, [1] = Abnormality ID
-const ASSAULT_STANCE = [ 100150, 67189264, 10154030, 0x4000000 + 110100 ] // [0] = Skill ID, [1] = Abnormality ID
+const data = require("./data");
 
 module.exports = function AutoStance(dispatch) {
-  let re = null,
-      on = false,
-      cid = null,
-      job = null,
-      skill = null,
-      model = null,
-      mounted = false,
-      interval = null,
-      location = null
+  let currentStamina = 0,
+    moduleEnabled = false,
+    buffActivated = false,
+    alive = false,
+    gameId = -1,
+    job = -1,
+    mounted = false,
+    intervalRef = null,
+    pos = null;
 
-  dispatch.hook('C_PLAYER_LOCATION', 1, (event) => { location = event })
-  dispatch.hook('S_MOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid)) mounted = true })
-  dispatch.hook('S_UNMOUNT_VEHICLE', 1, (event) => { if (event.target.equals(cid)) mounted = false })
+  dispatch.hook("S_LOGIN", 10, (event) => {
+    gameId = event.gameId;
+    job = (event.templateId - 10101) % 100;
+    moduleEnabled = data[job] ? true : false;
+  });
 
-  dispatch.hook('S_LOGIN', 2, (event) => {
-    ({cid, model} = event)
-    job = (model - 10101) % 100
-    skill = (job == JOB_ARCHER) ? SNIPERS_EYE[1] : ((job == 11) ? ASSAULT_STANCE[3] : ASSAULT_STANCE[1])
-  })
-
-  dispatch.hook('S_PLAYER_CHANGE_STAMINA', 1, (event) => {
-    if (job !== JOB_WARRIOR) return
-    re = event.current
-  })
-
-  dispatch.hook('S_ABNORMALITY_BEGIN', 2, (event) => {
-    if (event.source.equals(cid)) {
-      if (ASSAULT_STANCE.includes(event.id) || SNIPERS_EYE.includes(event.id)) on = true
+  dispatch.hook("S_LOAD_TOPO", 1, (event) => {
+    if (moduleEnabled) {
+      pos.loc = event.loc;
+      pos.w = 0;
+      mounted = false;
     }
-  })
+  });
 
-  dispatch.hook('S_ABNORMALITY_END', 1, (event) => {
-    if (event.target.equals(cid)) {
-      if (ASSAULT_STANCE.includes(event.id) || SNIPERS_EYE.includes(event.id)) {
-        on = false
-        tryActivateStance()
-      }
+  dispatch.hook("S_SPAWN_ME", 2, (event) => {
+    if (moduleEnabled) {
+      pos.loc = event.loc;
+      pos.w = event.w;
+      alive = event.alive;
+      tryActivateStance();
     }
-  })
+  });
+
+  dispatch.hook("C_PLAYER_LOCATION", 5, (event) => {
+    if (moduleEnabled) {
+      pos.loc = event.loc;
+      pos.w = event.w;
+    }
+  });
+
+  dispatch.hook("C_RETURN_TO_LOBBY", 1, (event) => {
+    moduleEnabled = false;
+  });
+
+  dispatch.hook("S_MOUNT_VEHICLE", 1, (event) => {
+    if (moduleEnabled)
+      if (event.target.equals(gameId)) mounted = true
+  });
+
+  dispatch.hook("S_UNMOUNT_VEHICLE", 1, (event) => {
+    if (moduleEnabled)
+      if (event.target.equals(gameId)) mounted = false
+  });
+
+  dispatch.hook("S_PLAYER_CHANGE_STAMINA", 1, event => {
+    if (moduleEnabled)
+      currentStamina = event.current;
+  });
+
+  dispatch.hook("S_PLAYER_STAT_UPDATE", 9, (event) => {
+    if (moduleEnabled)
+      currentStamina = event.stamina;
+  });
+  dispatch.hook("S_ABNORMALITY_BEGIN", 2, (event) => {
+    if (moduleEnabled)
+      if (event.source.equals(gameId))
+        if (data[job].abnormie == event.id)
+          buffActivated = true;
+  });
+
+  dispatch.hook("S_ABNORMALITY_END", 1, (event) => {
+    if (moduleEnabled)
+      if (event.target.equals(gameId))
+        if (data[job].abnormie == event.id)
+          buffActivated = false;
+  });
 
   function tryActivateStance() {
-    if (interval) clearInterval(interval)
+    if (intervalRef) clearinterval(intervalRef)
 
-    interval = setInterval(() => {
-      if (!on) {
-        if (job == JOB_WARRIOR && re <= 1000 || mounted) return
-        dispatch.toServer('C_START_SKILL', 2, {
-          skill: skill,
-          w: location.w,
-          x1: location.x1,
-          y1: location.y1,
-          z1: location.z1,
-          x2: location.x2,
-          y2: location.y2,
-          z2: location.z2,
-          unk1: 0,
-          movementkey: 0,
-          unk3: 0,
-          target: cid
-        })
-      } else clearInterval(interval)
-    }, INTERVAL)
-  }
-}
+    intervalRef = setinterval(() => {
+      if (!buffActivated) {
+
+        if (data[job].needRE && currentStamina < data[job].needRE || mounted || !alive) return
+
+        dispatch.toServer("C_START_SKILL", 5, {
+          skill: data[job].skill,
+          w: pos.w,
+          loc: pos.loc,
+          //dest: 0, parser, your job
+          unk: false,
+          moving: false,
+          continue: false,
+          //target: 0 parser, your job
+          unk2: false
+        });
+      } else
+        clearinterval(intervalRef)
+    }, INTERVAL);
+  };
+};
