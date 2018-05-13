@@ -11,12 +11,15 @@ module.exports = function AutoStance(dispatch) {
     job = -1,
     mounted = false,
     intervalRef = null,
-    pos = null;
+    pos = {
+      loc: null,
+      w: 0
+    };
 
   dispatch.hook("S_LOGIN", 10, (event) => {
     gameId = event.gameId;
     job = (event.templateId - 10101) % 100;
-    moduleEnabled = data[job] ? true : false;
+    moduleEnabled = (data[job] && event.level == 65) ? true : false;
   });
 
   dispatch.hook("S_LOAD_TOPO", 1, (event) => {
@@ -36,7 +39,7 @@ module.exports = function AutoStance(dispatch) {
     }
   });
 
-  dispatch.hook("C_PLAYER_LOCATION", 5, (event) => {
+  dispatch.hook("C_PLAYER_LOCATION", 3, (event) => {
     if (moduleEnabled) {
       pos.loc = event.loc;
       pos.w = event.w;
@@ -45,6 +48,7 @@ module.exports = function AutoStance(dispatch) {
 
   dispatch.hook("C_RETURN_TO_LOBBY", 1, (event) => {
     moduleEnabled = false;
+    if (intervalRef) clearInterval(intervalRef);
   });
 
   dispatch.hook("S_MOUNT_VEHICLE", 1, (event) => {
@@ -81,12 +85,12 @@ module.exports = function AutoStance(dispatch) {
   });
 
   function tryActivateStance() {
-    if (intervalRef) clearinterval(intervalRef)
+    if (intervalRef) clearInterval(intervalRef)
 
-    intervalRef = setinterval(() => {
+    intervalRef = setInterval(() => {
       if (!buffActivated) {
 
-        if (data[job].needRE && currentStamina < data[job].needRE || mounted || !alive) return
+        if (data[job].needRE && currentStamina < data[job].needRE || mounted || !alive) return;
 
         dispatch.toServer("C_START_SKILL", 5, {
           skill: data[job].skill,
@@ -99,8 +103,9 @@ module.exports = function AutoStance(dispatch) {
           //target: 0 parser, your job
           unk2: false
         });
-      } else
-        clearinterval(intervalRef)
+
+      } else clearInterval(intervalRef);
+
     }, INTERVAL);
   };
 };
