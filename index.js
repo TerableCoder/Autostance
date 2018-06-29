@@ -22,7 +22,7 @@ module.exports = function AutoStance(dispatch) {
     moduleEnabled = (data[job] && event.level == 65) ? true : false;
   });
 
-  dispatch.hook("S_LOAD_TOPO", 1, (event) => {
+  dispatch.hook("S_LOAD_TOPO", 3, (event) => {
     if (moduleEnabled) {
       pos.loc = event.loc;
       pos.w = 0;
@@ -30,7 +30,7 @@ module.exports = function AutoStance(dispatch) {
     }
   });
 
-  dispatch.hook("S_SPAWN_ME", 2, (event) => {
+  dispatch.hook("S_SPAWN_ME", 3, (event) => {
     if (moduleEnabled) {
       pos.loc = event.loc;
       pos.w = event.w;
@@ -39,7 +39,7 @@ module.exports = function AutoStance(dispatch) {
     }
   });
 
-  dispatch.hook("C_PLAYER_LOCATION", 3, (event) => {
+  dispatch.hook("C_PLAYER_LOCATION", 5, (event) => {
     if (moduleEnabled) {
       pos.loc = event.loc;
       pos.w = event.w;
@@ -51,14 +51,14 @@ module.exports = function AutoStance(dispatch) {
     if (intervalRef) clearInterval(intervalRef);
   });
 
-  dispatch.hook("S_MOUNT_VEHICLE", 1, (event) => {
+  dispatch.hook("S_MOUNT_VEHICLE", 2, (event) => {
     if (moduleEnabled)
-      if (event.target.equals(gameId)) mounted = true
+      if (event.gameId.equals(gameId)) mounted = true
   });
 
-  dispatch.hook("S_UNMOUNT_VEHICLE", 1, (event) => {
+  dispatch.hook("S_UNMOUNT_VEHICLE", 2, (event) => {
     if (moduleEnabled)
-      if (event.target.equals(gameId)) mounted = false
+      if (event.gameId.equals(gameId)) mounted = false
   });
 
   dispatch.hook("S_PLAYER_CHANGE_STAMINA", 1, event => {
@@ -97,7 +97,7 @@ module.exports = function AutoStance(dispatch) {
           w: pos.w,
           loc: pos.loc,
           //dest: 0, parser, your job
-          unk: false,
+          unk: true,
           moving: false,
           continue: false,
           //target: 0 parser, your job
