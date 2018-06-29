@@ -8,3 +8,5 @@ Works for the following stances:
 - Warrior: Assault Stance
 
 - Ninja: Focus
+
+- Slayer: Overpower
