@@ -1,12 +1,13 @@
 # Autostance
-Automatically uses stance skills if they aren't activated.
+Automatically uses stance skills if they aren't activated. I'll add warrior later, maybe.
 
 Works for the following stances:
 
-- Archer: Snipers Eye
+- Ninja: Focus 
 
-- Warrior: Assault Stance
 
-- Ninja: Focus
+Made by mootsen
 
-- Slayer: Overpower
+Updated by teralove and Yuyuko-sama
+
+Fixed again by TerableCoder
